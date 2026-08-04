@@ -42,6 +42,11 @@ public class DiceRollView extends View {
         pip.setColor(Theme.text());
     }
 
+    private boolean silent = false;
+
+    /** Suppress this die's own roll sound (a shared per-throw sound is played instead). */
+    public void setSilent(boolean s) { silent = s; }
+
     /**
      * Tumble then settle on face {@code resultPick + 1} (resultPick 0..5).
      * Safe to call repeatedly — cancels any in-flight roll first.
@@ -78,7 +83,9 @@ public class DiceRollView extends View {
                 if (onEnd != null) post(onEnd);
             }
         });
-        if (Theme.sound()) Sfx.diceRoll();
+        // The 5-dice row plays ONE shared Sfx.diceRoll() per throw (DiceView) — a per-die
+        // sound here stacks five ~1.5s tails and rattles on long after the dice settle.
+        if (!silent && Theme.sound()) Sfx.diceRoll();
         anim.start();
     }
 

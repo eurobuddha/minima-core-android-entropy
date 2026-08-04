@@ -7,8 +7,13 @@
     <path
         android:fillColor="#0A0E1A"
         android:pathData="M0,0h108v108h-108z" />
-    <!-- subtle glow behind the die -->
+    <!-- soft raised disc + faint cyan halo behind the die -->
     <path
-        android:fillColor="#121829"
-        android:pathData="M54,54m-40,0a40,40 0 1,1 80,0a40,40 0 1,1 -80,0" />
+        android:fillColor="#111A30"
+        android:pathData="M54,54m-42,0a42,42 0 1,1 84,0a42,42 0 1,1 -84,0" />
+    <path
+        android:strokeColor="#153A46"
+        android:strokeWidth="2"
+        android:fillColor="#00000000"
+        android:pathData="M54,54m-36,0a36,36 0 1,1 72,0a36,36 0 1,1 -72,0" />
 </vector>

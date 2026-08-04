@@ -119,6 +119,7 @@ public class DiceView extends BaseView {
             DiceRollView d = new DiceRollView(c);
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, Ui.dp(c, 70), 1);
             d.setLayoutParams(lp);
+            d.setSilent(true); // one shared roll sound per throw, not five stacked tails
             d.setIdleFace(i % 6);
             dice[i] = d;
             diceRow.addView(d);
@@ -342,7 +343,7 @@ public class DiceView extends BaseView {
             setStatus("Entropy source error — nothing recorded. Try again.", true);
             return;
         }
-        int target = Bip39.entTarget(wordsTarget);
+        if (Theme.sound()) Sfx.diceRoll(); // ONE shared sound for the whole 5-die throw
         final int[] landed = {0};
         for (int i = 0; i < DICE; i++) {
             final int idx = i;
