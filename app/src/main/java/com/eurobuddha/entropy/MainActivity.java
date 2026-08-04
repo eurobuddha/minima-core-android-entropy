@@ -46,6 +46,13 @@ public class MainActivity extends AppCompatActivity {
 
         Theme.load(this);
         Sfx.init(this);
+        TextView btnSound = findViewById(R.id.btnSound);
+        btnSound.setText(Theme.sound() ? "🔊" : "🔇");
+        btnSound.setOnClickListener(v -> {
+            Theme.setSound(this, !Theme.sound());
+            btnSound.setText(Theme.sound() ? "🔊" : "🔇");
+            if (Theme.sound()) Sfx.click();
+        });
         try {
             Bip39.init(this);
             selfTestErr = Bip39.selfTest();
