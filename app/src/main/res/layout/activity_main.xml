@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="14dp">
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="ENTROPY"
+            android:textColor="@color/gold"
+            android:textSize="22sp"
+            android:letterSpacing="0.4"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="PROVABLY FAIR BIP39 SEED DICE"
+            android:textColor="#5A6080"
+            android:textSize="10sp"
+            android:letterSpacing="0.2" />
+        <TextView
+            android:id="@+id/pairingBanner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="#33FFD700"
+            android:padding="8dp"
+            android:text="Enable Entropy in Minima Core → Apps to use node entropy"
+            android:textColor="@color/gold"
+            android:textSize="12sp"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/bg"
+        app:tabIndicatorColor="@color/gold"
+        app:tabSelectedTextColor="@color/gold"
+        app:tabTextColor="#5A6080"
+        xmlns:app="http://schemas.android.com/apk/res-auto" />
+
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/pager"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+</LinearLayout>
