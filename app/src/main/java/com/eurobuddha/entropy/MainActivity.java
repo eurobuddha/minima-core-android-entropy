@@ -62,7 +62,9 @@ public class MainActivity extends AppCompatActivity {
 
         // node IPC to the separately installed Minima Core app
         node = new NodeApi(this, enabled -> {
-            findViewById(R.id.pairingBanner).setVisibility(enabled ? android.view.View.GONE : android.view.View.VISIBLE);
+            // the banner is repurposed for a self-test failure — never let pairing hide that
+            if (selfTestErr == null)
+                findViewById(R.id.pairingBanner).setVisibility(enabled ? android.view.View.GONE : android.view.View.VISIBLE);
             if (enabled) verifyNode();
         });
         engine = new RollEngine(node);
@@ -78,6 +80,13 @@ public class MainActivity extends AppCompatActivity {
         pager.setAdapter(adapter);
         pager.setOffscreenPageLimit(2);
         tabs.setupWithViewPager(pager);
+        // secret hygiene on tab switch: re-blur whatever the leaving tab had on show
+        pager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+            @Override public void onPageSelected(int position) {
+                diceView.hideWords();
+                lastWordView.hideAll();
+            }
+        });
 
         if (selfTestErr != null) {
             TextView banner = findViewById(R.id.pairingBanner);
@@ -134,6 +143,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        main.removeCallbacksAndMessages(null);   // pending engine-ready guard
         // wipe secrets from the UI before teardown
         if (diceView != null) diceView.wipe();
         if (lastWordView != null) lastWordView.clearAll();

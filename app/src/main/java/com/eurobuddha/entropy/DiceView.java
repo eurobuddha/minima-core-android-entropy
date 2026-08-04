@@ -463,7 +463,13 @@ public class DiceView extends BaseView {
         status.setTextColor(err ? Theme.red() : Theme.dim());
     }
 
+    /** Called on tab switch: re-blur a revealed phrase without destroying the run. */
+    public void hideWords() {
+        if (done && revealed) { revealed = false; renderWords(); }
+    }
+
     public void wipe() {
+        main.removeCallbacksAndMessages(null);   // stale watchdog / landing callbacks
         faces.clear(); audits.clear();
         phrase = null;
         busy = false; auto = false; done = false; revealed = false;

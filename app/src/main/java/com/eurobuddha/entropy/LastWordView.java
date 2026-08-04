@@ -36,6 +36,7 @@ public class LastWordView extends BaseView {
     private final List<EditText> boxes = new ArrayList<>();
     private EditText lastBox;
     private boolean muteWatcher = false;
+    private final List<Integer> prevLens = new ArrayList<>(); // per-box previous text length
 
     public LastWordView(MainActivity a) {
         super(a);
@@ -130,6 +131,7 @@ public class LastWordView extends BaseView {
 
     private void buildBoxes() {
         boxes.clear();
+        prevLens.clear();
         boxGrid.removeAllViews();
         candidates = null;
         resultsCard.setVisibility(View.GONE);
@@ -148,9 +150,14 @@ public class LastWordView extends BaseView {
             e.setHintTextColor(Theme.dim());
             e.setTextColor(cs ? Theme.cyan() : Theme.text());
             e.setTextSize(12);
-            e.setTypeface(Theme.mono());
             e.setSingleLine(true);
-            e.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+            // VISIBLE_PASSWORD: keyboards treat this as a password field — no personal-dictionary
+            // learning, no cloud sync of typed seed words. NO_SUGGESTIONS alone does not stop that.
+            e.setInputType(InputType.TYPE_CLASS_TEXT
+                    | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
+                    | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+            e.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO);
+            e.setTypeface(Theme.mono()); // set AFTER inputType: VISIBLE_PASSWORD resets the typeface
             e.setBackground(Ui.rounded(0x66000000, cs ? Theme.cyan() & 0x80FFFFFF : Theme.border(), 6, act));
             int p = Ui.dp(act, 8);
             e.setPadding(p, Ui.dp(act, 6), p, Ui.dp(act, 6));
@@ -169,6 +176,7 @@ public class LastWordView extends BaseView {
                 });
                 e.setOnFocusChangeListener((v, has) -> { if (has) showSuggestions(idx); });
                 boxes.add(e);
+                prevLens.add(0);
             }
             row.addView(e);
         }
@@ -194,9 +202,13 @@ public class LastWordView extends BaseView {
             muteWatcher = false;
         }
         invalidateResults();
+        boolean grew = v.length() > prevLens.get(idx);
+        prevLens.set(idx, v.length());
         List<String> m = suggestionsFor(v);
-        // BIP39 words are unique after 4 chars: commit the moment the prefix is unambiguous
-        if (m.size() == 1 && !v.isEmpty()) { commit(idx, m.get(0)); return; }
+        // BIP39 words are unique after 4 chars: commit the moment the prefix is unambiguous —
+        // but only while TYPING (grew). Auto-committing on deletion would make committed words
+        // uneditable: backspacing "abandon" to "abando" would instantly re-complete it.
+        if (grew && m.size() == 1 && !v.isEmpty()) { commit(idx, m.get(0)); return; }
         styleBox(idx);
         showSuggestions(idx);
         refreshCalc();
@@ -219,6 +231,7 @@ public class LastWordView extends BaseView {
         e.setText(w);
         e.setSelection(w.length());
         muteWatcher = false;
+        prevLens.set(idx, w.length());
         styleBox(idx);
         invalidateResults();
         refreshCalc();
@@ -372,6 +385,11 @@ public class LastWordView extends BaseView {
         setHidden(false);
         buildBoxes();
         refreshCalc();
+    }
+
+    /** Called on tab switch: blur everything without destroying the user's typed words. */
+    public void hideAll() {
+        if (!hidden) setHidden(true);
     }
 
     @Override public void refresh() {}
