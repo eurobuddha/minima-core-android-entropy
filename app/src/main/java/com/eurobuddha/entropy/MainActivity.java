@@ -23,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
     private LastWordView lastWordView;
     private String selfTestErr = "not run";
     private volatile boolean engineReady = false;
+    private boolean demoMode = false;   // session-only, never persisted
 
     public RollEngine engine() { return engine; }
     public String selfTestError() { return selfTestErr; }
@@ -52,6 +53,23 @@ public class MainActivity extends AppCompatActivity {
             Theme.setSound(this, !Theme.sound());
             btnSound.setText(Theme.sound() ? "🔊" : "🔇");
             if (Theme.sound()) Sfx.click();
+        });
+
+        // Demo mode: temporarily lifts FLAG_SECURE so the screen can be mirrored/captured
+        // for presentations. Deliberately NOT persisted — every launch starts protected —
+        // and a loud banner stays up the whole time it is on.
+        TextView btnDemo = findViewById(R.id.btnDemo);
+        TextView demoBanner = findViewById(R.id.demoBanner);
+        btnDemo.setOnClickListener(v -> {
+            demoMode = !demoMode;
+            if (demoMode) {
+                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
+            } else {
+                getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
+            }
+            demoBanner.setVisibility(demoMode ? android.view.View.VISIBLE : android.view.View.GONE);
+            btnDemo.setAlpha(demoMode ? 1f : 0.55f);
+            btnDemo.setText(demoMode ? "🔓" : "🎥");
         });
         try {
             Bip39.init(this);

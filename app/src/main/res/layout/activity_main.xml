@@ -32,7 +32,27 @@
                 android:gravity="center"
                 android:text="🔊"
                 android:textSize="20sp" />
+            <TextView
+                android:id="@+id/btnDemo"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="start|center_vertical"
+                android:gravity="center"
+                android:alpha="0.55"
+                android:text="🎥"
+                android:textSize="20sp" />
         </FrameLayout>
+        <TextView
+            android:id="@+id/demoBanner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="#40FF2D78"
+            android:padding="8dp"
+            android:text="🎥 DEMO MODE — screen capture &amp; mirroring ALLOWED. Do NOT generate a real seed. Resets on restart."
+            android:textColor="@color/pink"
+            android:textSize="12sp"
+            android:visibility="gone" />
         <TextView
             android:id="@+id/subtitle"
             android:layout_width="wrap_content"
