@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Entropy RNG Audit</title>
+<style>
+  :root {
+    --ground: #0f1216;
+    --panel: #171c23;
+    --panel2: #1d232c;
+    --line: #2a323d;
+    --ink: #e7eaee;
+    --dim: #98a2ae;
+    --gold: #e3b34f;
+    --gold-soft: rgba(227, 179, 79, 0.14);
+    --cyan: #62d3ce;
+    --cyan-soft: rgba(98, 211, 206, 0.10);
+    --green: #74c27a;
+    --green-soft: rgba(116, 194, 122, 0.12);
+    --amber: #d9a03f;
+    --amber-soft: rgba(217, 160, 63, 0.10);
+    --red: #d97a6f;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --ground: #f3f4f1;
+      --panel: #ffffff;
+      --panel2: #eceee9;
+      --line: #d8dad2;
+      --ink: #1b2129;
+      --dim: #5c6672;
+      --gold: #96690f;
+      --gold-soft: rgba(150, 105, 15, 0.10);
+      --cyan: #0d6e6a;
+      --cyan-soft: rgba(13, 110, 106, 0.07);
+      --green: #2e7d3a;
+      --green-soft: rgba(46, 125, 58, 0.10);
+      --amber: #9a6a10;
+      --amber-soft: rgba(154, 106, 16, 0.09);
+      --red: #b04437;
+    }
+  }
+  :root[data-theme="light"] {
+    --ground: #f3f4f1;
+    --panel: #ffffff;
+    --panel2: #eceee9;
+    --line: #d8dad2;
+    --ink: #1b2129;
+    --dim: #5c6672;
+    --gold: #96690f;
+    --gold-soft: rgba(150, 105, 15, 0.10);
+    --cyan: #0d6e6a;
+    --cyan-soft: rgba(13, 110, 106, 0.07);
+    --green: #2e7d3a;
+    --green-soft: rgba(46, 125, 58, 0.10);
+    --amber: #9a6a10;
+    --amber-soft: rgba(154, 106, 16, 0.09);
+    --red: #b04437;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: system-ui, "Avenir Next", "Segoe UI", sans-serif;
+    font-size: 16px;
+    line-height: 1.65;
+    margin: 0;
+    padding: 0 20px 96px;
+  }
+  .mono, code, pre {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  main { max-width: 46rem; margin: 0 auto; }
+
+  /* ---- hero / verdict ---- */
+  header { padding: 64px 0 8px; }
+  .eyebrow {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  h1 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace;
+    font-size: clamp(28px, 5.5vw, 42px);
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    margin: 10px 0 0;
+    text-wrap: balance;
+  }
+  .subtitle { color: var(--dim); margin: 14px 0 0; max-width: 60ch; }
+
+  .verdict {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    background: var(--green-soft);
+    border: 1px solid var(--green);
+    border-radius: 8px;
+    padding: 18px 20px;
+    margin: 32px 0 0;
+  }
+  .verdict .pips {
+    font-size: 26px;
+    line-height: 1.2;
+    color: var(--green);
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+  .verdict p { margin: 0; }
+  .verdict strong { color: var(--green); }
+
+  /* ---- sections ---- */
+  section { margin-top: 56px; }
+  h2 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace;
+    font-size: 20px;
+    letter-spacing: -0.01em;
+    margin: 0 0 4px;
+    text-wrap: balance;
+  }
+  h2 .die { color: var(--gold); margin-right: 10px; font-size: 24px; }
+  .kicker {
+    color: var(--dim);
+    font-size: 13.5px;
+    margin: 0 0 18px;
+  }
+  p { margin: 0 0 14px; max-width: 66ch; }
+  strong { font-weight: 600; }
+  a { color: var(--cyan); text-decoration-color: color-mix(in srgb, var(--cyan) 45%, transparent); }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+  /* ---- roll pipeline ---- */
+  .pipeline {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 20px 22px;
+    margin: 20px 0;
+    overflow-x: auto;
+  }
+  .pipeline ol {
+    list-style: none;
+    margin: 0; padding: 0;
+    display: flex; flex-direction: column; gap: 0;
+  }
+  .pipeline li {
+    display: grid;
+    grid-template-columns: 34px 1fr;
+    gap: 14px;
+    align-items: baseline;
+    padding: 9px 0;
+  }
+  .pipeline li + li { border-top: 1px dashed var(--line); }
+  .pipeline .step {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 12px;
+    color: var(--gold);
+    text-align: right;
+  }
+  .pipeline .what { font-size: 15px; }
+  .pipeline .what code {
+    background: var(--cyan-soft);
+    color: var(--cyan);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 13.5px;
+    white-space: nowrap;
+  }
+  .pipeline .why { color: var(--dim); font-size: 13.5px; display: block; }
+
+  /* ---- tables ---- */
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; margin: 20px 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+  th, td { text-align: left; padding: 11px 16px; vertical-align: top; }
+  thead th {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--dim);
+    background: var(--panel2);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  tbody tr { background: var(--panel); }
+  tbody tr + tr td { border-top: 1px solid var(--line); }
+  td.flaw { color: var(--red); }
+  td.ok { color: var(--green); }
+  td .ref {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 12.5px;
+    color: var(--cyan);
+    white-space: nowrap;
+  }
+
+  /* ---- checklist ---- */
+  .checks { list-style: none; margin: 20px 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .checks li {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 13px 16px;
+    display: grid;
+    grid-template-columns: 22px 1fr;
+    gap: 12px;
+  }
+  .checks .tick { color: var(--green); font-weight: 700; }
+  .checks .ref {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 12.5px;
+    color: var(--cyan);
+    display: block;
+    margin-top: 3px;
+    overflow-x: auto;
+  }
+
+  /* ---- caveats + ledger ---- */
+  .caveat {
+    background: var(--amber-soft);
+    border: 1px solid color-mix(in srgb, var(--amber) 55%, transparent);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 0 0 14px;
+  }
+  .caveat h3 { margin: 0 0 6px; font-size: 15px; color: var(--amber); font-weight: 600; }
+  .caveat p { margin: 0; font-size: 14.5px; }
+  .caveat .fix { margin-top: 8px; color: var(--green); font-size: 14px; }
+  .caveat .fix::before { content: "✓ "; font-weight: 700; }
+
+  .ledger {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin: 20px 0;
+    font-size: 13px;
+  }
+  .ledger dt {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-top: 14px;
+  }
+  .ledger dt:first-child { margin-top: 0; }
+  .ledger dd { margin: 4px 0 0; }
+  .ledger .hash, .ledger .url {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    color: var(--cyan);
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding: 2px 0;
+  }
+
+  /* ---- compare cards ---- */
+  .duel { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 20px 0; }
+  @media (max-width: 620px) { .duel { grid-template-columns: 1fr; } }
+  .duel .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 16px 18px;
+  }
+  .duel h3 {
+    margin: 0 0 10px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 14px;
+    color: var(--gold);
+  }
+  .duel ul { margin: 0; padding-left: 18px; font-size: 14px; }
+  .duel li { margin-bottom: 7px; }
+  .duel li:last-child { margin-bottom: 0; }
+
+  footer {
+    margin-top: 64px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    color: var(--dim);
+    font-size: 13px;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    header, .verdict { animation: settle 0.5s ease-out both; }
+    .verdict { animation-delay: 0.12s; }
+    @keyframes settle { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  }
+</style>
+</head>
+<body>
+
+<main>
+<header>
+  <div class="eyebrow">Security review · 2026-08-17 · entropy 0.1.8</div>
+  <h1>Entropy RNG Audit</h1>
+  <p class="subtitle">Are the seed-phrase dice rolls truly random, or crackable? A full-path review of
+  the roll engine, BIP39 encoding, and IPC transport in the Entropy native Android app for Minima.</p>
+
+  <div class="verdict">
+    <div class="pips" aria-hidden="true">⚄⚄</div>
+    <p><strong>Verdict: cryptographically sound — not crackable in any practical sense.</strong>
+    Every roll mixes a fresh 256-bit kernel-CSPRNG secret with independent node randomness through SHA3,
+    with exact rejection sampling. An attacker faces 2<sup>128</sup>–2<sup>256</sup> uniform possibilities
+    and no computational shortcut. The weak-PRNG failure class behind the wallet-drain hacks does not
+    exist in this design.</p>
+  </div>
+</header>
+
+<section>
+  <h2><span class="die" aria-hidden="true">⚀</span>How one die face is made</h2>
+  <p class="kicker">RollEngine.java — ported from the Zero Edge Casino resolve maths, proven on-chain.</p>
+  <div class="pipeline">
+    <ol>
+      <li><span class="step">a</span><span class="what">The Minima node supplies fresh randomness via its <code>random</code> command.
+        <span class="why">First independent CSPRNG. Travels over package-targeted IPC only.</span></span></li>
+      <li><span class="step">b</span><span class="what">The device draws a fresh 32-byte secret from <code>SecureRandom</code> — per roll.
+        <span class="why">Second independent source: the Android kernel CSPRNG. 256 bits nobody else ever sees in advance.</span></span></li>
+      <li><span class="step">h</span><span class="what">The node computes <code>SHA3(a ++ b)</code> — bit-identical to the KISS&nbsp;VM script, so any roll can be re-verified with <code>runscript</code> in a Minima terminal.
+        <span class="why">Either source alone failing still leaves the output unpredictable.</span></span></li>
+      <li><span class="step">n</span><span class="what">The first 4 bytes of the hash become a 32-bit number; values ≥ <code>4294967292</code> are rerolled.
+        <span class="why">4294967292 = floor(2³²⁄6)·6 — rejection sampling gives every face exactly 1⁄6. Zero modulo bias, pinned by a unit test.</span></span></li>
+      <li><span class="step">⚅</span><span class="what"><code>n mod 6 + 1</code> is the face. Faces become entropy bits via the iancoleman unbiased encoding, locked to the genuine bip39 code by fixed vectors.
+        <span class="why">Bip39Test verifies parity with iancoleman/bip39 v0.4.3; generation is blocked if the self-test fails.</span></span></li>
+    </ol>
+  </div>
+</section>
+
+<section>
+  <h2><span class="die" aria-hidden="true">⚁</span>Why the known wallet-RNG hacks don't apply</h2>
+  <p class="kicker">Every drained-wallet RNG incident shared one root cause: a small, enumerable seed space.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Incident</th><th>Root cause</th><th>Search space</th></tr></thead>
+      <tbody>
+        <tr><td>Milk Sad (Libbitcoin <span class="ref">bx seed</span>, 2023)</td><td class="flaw">Mersenne Twister seeded with 32-bit time</td><td class="mono">2³²</td></tr>
+        <tr><td>Trust Wallet browser extension (2023)</td><td class="flaw">MT19937, 32-bit seed</td><td class="mono">2³²</td></tr>
+        <tr><td>Android Bitcoin wallets (2013)</td><td class="flaw">Broken <span class="ref">SecureRandom</span> duplicated values (fixed in Android 4.4+)</td><td class="mono">tiny</td></tr>
+        <tr><td>Cake Wallet (2020, disclosed 2021)</td><td class="flaw">Dart's default non-crypto <span class="ref">Random</span></td><td class="mono">2³²</td></tr>
+        <tr><td><strong>Entropy</strong></td><td class="ok">Fresh 256-bit kernel-CSPRNG secret per roll + second source, hashed</td><td class="mono">2¹²⁸–2²⁵⁶</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Those wallets asked a non-cryptographic generator, seeded with a handful of guessable bits, to invent the
+  whole seed — so attackers simply enumerated every possible seed and swept the matching addresses.
+  Entropy has no such shortcut: even an adversary who fully controls the node's contribution still faces the
+  256-bit device secret behind SHA3.</p>
+</section>
+
+<section>
+  <h2><span class="die" aria-hidden="true">⚂</span>What the review verified</h2>
+  <ul class="checks">
+    <li><span class="tick">✓</span><span>Fresh 256-bit <strong>SecureRandom</strong> secret drawn per roll, never reused.
+      <span class="ref">app/src/main/java/com/eurobuddha/entropy/RollEngine.java:57</span></span></li>
+    <li><span class="tick">✓</span><span>Exact rejection sampling — threshold 4294967292, error out after 25 rejects rather than degrade.
+      <span class="ref">RollEngine.java:24 · app/src/test/java/com/eurobuddha/entropy/Bip39Test.java (rejectionThresholdIsExact)</span></span></li>
+    <li><span class="tick">✓</span><span>Outbound IPC is an <strong>explicit broadcast to Minima Core only</strong> — third-party apps cannot receive it.
+      <span class="ref">apks/base/minimaapi/.../MinimaAPI.java:227 (intent.setPackage)</span></span></li>
+    <li><span class="tick">✓</span><span>Node replies are <strong>explicitly targeted back at this app only</strong> — no on-device eavesdropping of the hash results.
+      <span class="ref">apks/base/app/.../receiver/MinimaReceiver.java:582, 638</span></span></li>
+    <li><span class="tick">✓</span><span>Faces→bits→words is the iancoleman unbiased dice encoding with raw truncation, enforced by fixed vectors; a failed self-test blocks generation entirely.
+      <span class="ref">app/src/main/java/com/eurobuddha/entropy/Bip39.java (selfTest)</span></span></li>
+    <li><span class="tick">✓</span><span>Nothing persisted, zero Android permissions, FLAG_SECURE against screenshots; words re-blur on tab switch and app teardown wipes the UI.
+      <span class="ref">MainActivity.java:36 · DiceView.java (wipe)</span></span></li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="die" aria-hidden="true">⚃</span>Residual risks — and the hardening shipped</h2>
+  <p class="kicker">None is a practical crack; all assume a compromised device or misused demo mode. All three were addressed the same day.</p>
+
+  <div class="caveat">
+    <h3>The node can reconstruct the seed</h3>
+    <p>The SHA3 runs on the node, so Minima Core sees both secrets and hence every face. This is the deliberate
+    price of on-chain verifiability — and if Minima Core or the phone is compromised, any on-device generator
+    has already lost. The per-roll audit log is equally seed-equivalent.</p>
+    <p class="fix">0.1.8 adds a warning above the audit log: treat it exactly like the seed words.</p>
+  </div>
+
+  <div class="caveat">
+    <h3>Demo mode lifts FLAG_SECURE</h3>
+    <p>Demo mode (0.1.7) makes the screen capturable for presentations. Faces captured on a mirrored or
+    recorded screen are seed material.</p>
+    <p class="fix">0.1.8 blocks all rolls — digital and physical — while demo mode is on, and re-blurs any revealed words the moment it is switched on.</p>
+  </div>
+
+  <div class="caveat">
+    <h3>IPC auth tokens came from java.util.Random</h3>
+    <p>The tokens authenticating node replies to the app's exported receiver were minted by a 48-bit-seeded,
+    non-cryptographic PRNG. Blind forgery over broadcasts was already infeasible, but the barrier was thinner
+    than it should be.</p>
+    <p class="fix">The shared minimaapi SDK now mints all IPC tokens with SecureRandom; the rebuilt library ships inside 0.1.8.</p>
+  </div>
+
+  <dl class="ledger">
+    <dt>entropy 0.1.8 — security hardening</dt>
+    <dd><span class="hash">b003c61bc76b9a8d5a86318a86e981746b01a519</span></dd>
+    <dt>minimaapi SDK — SecureRandom IPC tokens (apks/base, 1.6.10-ui-h2)</dt>
+    <dd><span class="hash">eff38d03cf13ebaea445596dac65133b34c3b558</span></dd>
+    <dt>entropy 0.1.7 — demo mode</dt>
+    <dd><span class="hash">c69e8ee3a8c55c77b54253fe52733f8b4a18ea81</span></dd>
+    <dt>Published release</dt>
+    <dd><a class="url" href="https://github.com/eurobuddha/minima-core-apks/releases/tag/minima-core-android-entropy-v0.1.8">https://github.com/eurobuddha/minima-core-apks/releases/tag/minima-core-android-entropy-v0.1.8</a></dd>
+  </dl>
+  <p>Follow-up noted for other family apps: each still vendors the pre-fix
+  <span class="mono">minimaapi.aar</span>; copy <span class="mono">apks/base/dist/minimaapi.aar</span> into each
+  app's <span class="mono">app/libs/</span> with that app's own version bump when next touched.</p>
+</section>
+
+<section>
+  <h2><span class="die" aria-hidden="true">⚄</span>Digital rolls vs five physical dice</h2>
+  <p>For every purpose that matters to a seed phrase: <strong>yes — at least as random, and in one respect better.</strong>
+  The guarantees differ in kind, not in practical strength.</p>
+  <div class="duel">
+    <div class="card">
+      <h3>digital wins: exactness</h3>
+      <ul>
+        <li>Rejection sampling makes every face <em>exactly</em> 1⁄6 — no physical die achieves that.</li>
+        <li>Household dice have rounded corners, off-center pips, thrower habits — measurable bias that shaves entropy per roll.</li>
+        <li>Computationally indistinguishable from perfect dice to any adversary who can't break SHA3 or the kernel CSPRNG.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>physical wins: unconditional physics</h3>
+      <ul>
+        <li>A fair die rolled unobserved is unpredictable by physics alone — no cryptographic assumptions.</li>
+        <li>Malware can't touch a die on the table…</li>
+        <li>…but in this app the physical faces are typed into the same phone, so a compromised device reads those too. Physical mode only truly wins with the whole derivation done off-device.</li>
+      </ul>
+    </div>
+  </div>
+  <p>On an uncompromised phone, the digital rolls are at least as strong as ideal dice and stronger than typical
+  real ones. The one scenario where physical dice genuinely win — a fully compromised device — is one where any
+  app has already lost, whichever mode is used.</p>
+</section>
+
+<section>
+  <h2><span class="die" aria-hidden="true">⚅</span>Scope &amp; method</h2>
+  <p>Full-path source review conducted 2026-08-17 against entropy 0.1.7→0.1.8, the shared minimaapi SDK, and the
+  node-side broadcast receiver: <span class="mono">RollEngine.java</span>, <span class="mono">Bip39.java</span>,
+  <span class="mono">DiceView.java</span>, <span class="mono">MainActivity.java</span>,
+  <span class="mono">NodeApi.java</span>, <span class="mono">MinimaAPI.java</span>,
+  <span class="mono">MinimaReceiver.java</span>. Findings cross-checked against the family knowledge graph and the
+  IPC hardening specs in <span class="mono">support/</span>. Unit tests (BIP39 parity vectors, rejection threshold)
+  green before and after the hardening commits.</p>
+</section>
+
+<footer>
+  Entropy — provably fair BIP39 seed dice for Minima · native Android, zero permissions, nothing persisted.
+  Reviewed with Claude Code.
+</footer>
+</main>
+
+</body>
+</html>

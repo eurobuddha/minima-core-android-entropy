@@ -1,16 +1,16 @@
 # Graph Report - entropy  (2026-08-17)
 
 ## Corpus Check
-- 21 files · ~14,597 words
+- 22 files · ~15,690 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 279 nodes · 722 edges · 17 communities (13 shown, 4 thin omitted)
+- 296 nodes · 738 edges · 17 communities (13 shown, 4 thin omitted)
 - Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 23 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `b003c61b`
+- Built from commit: `4cf89192`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -22,7 +22,7 @@
 - DiceView
 - LastWordView
 - DiceRollView
-- android.view.View
+- Entropy RNG Audit
 - gradlew
 - install.sh
 - pre-commit
@@ -76,20 +76,20 @@ Cohesion: 0.16
 Nodes (5): Bip39, LastWords, Bip39Test, org.junit.BeforeClass, org.junit.Test
 
 ### Community 4 - "DiceView"
-Cohesion: 0.27
-Nodes (5): DiceView, Override, Audit, BaseView, DiceRollView
+Cohesion: 0.24
+Nodes (6): android.widget.ProgressBar, DiceView, Override, Audit, BaseView, DiceRollView
 
 ### Community 5 - "LastWordView"
-Cohesion: 0.15
-Nodes (9): android.graphics.drawable.GradientDrawable, android.widget.Button, android.widget.EditText, android.widget.HorizontalScrollView, android.widget.LinearLayout, android.widget.ProgressBar, android.widget.TextView, Override (+1 more)
+Cohesion: 0.09
+Nodes (15): android.graphics.drawable.GradientDrawable, android.view.View, android.view.ViewGroup, android.widget.Button, android.widget.EditText, android.widget.HorizontalScrollView, android.widget.LinearLayout, android.widget.TextView (+7 more)
 
 ### Community 6 - "DiceRollView"
-Cohesion: 0.20
+Cohesion: 0.19
 Nodes (7): android.animation.ValueAnimator, android.graphics.Canvas, android.graphics.Paint, android.graphics.RectF, android.util.AttributeSet, DiceRollView, Override
 
-### Community 7 - "android.view.View"
-Cohesion: 0.17
-Nodes (7): android.view.View, android.view.ViewGroup, androidx.annotation.NonNull, androidx.viewpager.widget.PagerAdapter, BaseView, Override, MainPager
+### Community 7 - "Entropy RNG Audit"
+Cohesion: 0.12
+Nodes (15): Build, Entropy — native Android APK, Install, Release, 1. How one die face is made, 2. Why the known wallet-RNG hacks don't apply, 3. What the review verified, 4. Residual risks — and the hardening shipped (+7 more)
 
 ### Community 8 - "gradlew"
 Cohesion: 0.60
@@ -100,7 +100,7 @@ Cohesion: 0.10
 Nodes (7): android.os.Bundle, androidx.appcompat.app.AppCompatActivity, Override, MainActivity, LastWordView, NodeApi, RollEngine
 
 ## Knowledge Gaps
-- **7 isolated node(s):** `install.sh script`, `SINE`, `SQUARE`, `SAW`, `HIGHPASS` (+2 more)
+- **19 isolated node(s):** `Build`, `Install`, `Release`, `1. How one die face is made`, `2. Why the known wallet-RNG hacks don't apply` (+14 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **4 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -108,16 +108,16 @@ Nodes (7): android.os.Bundle, androidx.appcompat.app.AppCompatActivity, Override
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Sfx` connect `Sfx` to `MainActivity`?**
-  _High betweenness centrality (0.133) - this node is a cross-community bridge._
+  _High betweenness centrality (0.118) - this node is a cross-community bridge._
 - **Why does `DiceView` connect `DiceView` to `RollEngine`, `.build`, `LastWordView`, `MainActivity`?**
-  _High betweenness centrality (0.103) - this node is a cross-community bridge._
-- **Why does `LastWordView` connect `LastWordView` to `.build`, `MainActivity`, `android.view.View`?**
   _High betweenness centrality (0.091) - this node is a cross-community bridge._
-- **What connects `install.sh script`, `SINE`, `SQUARE` to the rest of the system?**
-  _7 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Why does `LastWordView` connect `LastWordView` to `.build`, `MainActivity`?**
+  _High betweenness centrality (0.080) - this node is a cross-community bridge._
+- **What connects `Build`, `Install`, `Release` to the rest of the system?**
+  _19 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `RollEngine` be split into smaller, more focused modules?**
   _Cohesion score 0.11051693404634581 - nodes in this community are weakly interconnected._
 - **Should `.build` be split into smaller, more focused modules?**
-  _Cohesion score 0.116701607267645 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.11901306240928883 - nodes in this community are weakly interconnected._
 - **Should `Sfx` be split into smaller, more focused modules?**
   _Cohesion score 0.12612612612612611 - nodes in this community are weakly interconnected._
