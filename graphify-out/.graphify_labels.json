@@ -1,12 +1,12 @@
 {
   "0": "RollEngine",
-  "1": "android.content.Context",
+  "1": ".build",
   "2": "Sfx",
   "3": "Bip39",
-  "4": ".build",
+  "4": "DiceView",
   "5": "LastWordView",
   "6": "DiceRollView",
-  "7": "BaseView",
+  "7": "android.view.View",
   "8": "gradlew",
   "9": "install.sh",
   "10": "pre-commit",
@@ -14,5 +14,6 @@
   "12": "build.gradle",
   "13": "settings.gradle",
   "14": "MainActivity",
-  "15": "Override"
+  "15": "DiceView",
+  "16": "Override"
 }
