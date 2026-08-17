@@ -227,6 +227,11 @@ public class DiceView extends BaseView {
         auditLog = Ui.text(c, "", Theme.dim(), 9, false);
         auditLog.setTypeface(Theme.mono());
         auditLog.setTextIsSelectable(true);
+        TextView auditWarn = Ui.text(c,
+                "⚠ This log reveals every roll's secrets (A + B) — anyone who sees it can " +
+                "recompute the entire seed phrase. Treat it exactly like the seed words.",
+                Theme.gold(), 10, false);
+        auditWrap.addView(auditWarn);
         TextView auditHint = Ui.text(c,
                 "Each digital face = SHA3(node_secret ++ device_secret) → first 4 bytes mod 6 " +
                 "(values ≥ 4294967292 rerolled — zero modulo bias). Verify any roll in a Minima " +
@@ -304,6 +309,7 @@ public class DiceView extends BaseView {
     private void throwDice() {
         if (busy || done) return;
         if (act.selfTestError() != null) { setStatus("Blocked — self-test failed: " + act.selfTestError(), true); return; }
+        if (blockedByDemo()) return;
         if (!act.engineReady()) { setStatus("Verifying entropy sources — one moment…", true); return; }
         busy = true;
         setStatus("", false);
@@ -370,6 +376,7 @@ public class DiceView extends BaseView {
     private void physicalTap(int face) {
         if (done || busy || !physical) return;
         if (act.selfTestError() != null) { setStatus("Blocked — self-test failed: " + act.selfTestError(), true); return; }
+        if (blockedByDemo()) return;
         faces.add(face);
         audits.add(new RollEngine.Audit(RollEngine.SRC_PHYSICAL, "", "", face - 1, face));
         dice[(faces.size() - 1) % DICE].setIdleFace(face - 1);
@@ -456,6 +463,15 @@ public class DiceView extends BaseView {
             row.addView(t);
         }
         btnReveal.setText(revealed ? "🙈 Tap to hide" : "👁 Tap to reveal");
+    }
+
+    /** Rolls captured on a mirrored/recorded screen are seed material — never collect any. */
+    private boolean blockedByDemo() {
+        if (!act.demoMode()) return false;
+        auto = false;
+        btnAuto.setText("Auto-roll: off"); btnAuto.setTextColor(Theme.dim());
+        setStatus("Blocked — demo mode is ON (screen capture enabled). Turn it off to roll.", true);
+        return true;
     }
 
     private void setStatus(String s, boolean err) {

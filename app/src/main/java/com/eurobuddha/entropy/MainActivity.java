@@ -28,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
     public RollEngine engine() { return engine; }
     public String selfTestError() { return selfTestErr; }
     public boolean engineReady() { return engineReady; }
+    public boolean demoMode() { return demoMode; }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +65,9 @@ public class MainActivity extends AppCompatActivity {
             demoMode = !demoMode;
             if (demoMode) {
                 getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
+                // the screen is now capturable — re-blur anything sensitive already on show
+                if (diceView != null) diceView.hideWords();
+                if (lastWordView != null) lastWordView.hideAll();
             } else {
                 getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
             }
