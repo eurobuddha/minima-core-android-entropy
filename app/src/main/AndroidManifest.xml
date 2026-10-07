@@ -5,7 +5,7 @@
     <!-- No permissions: the app never touches the network or storage.
          Node access is broadcast IPC to the separately installed Minima Core app. -->
     <queries>
-        <package android:name="org.minimarex.minimacore" />
+        <package android:name="com.eurobuddha.minimacore" />
     </queries>
 
     <application
