@@ -1,0 +1,15 @@
+Pandamonium display repair propagation — entropy 0.1.10 (110)
+
+Subtitle and inactive tabs have stronger contrast; tabs can scroll; sound and demo controls have accessibility labels.
+Reused from minima-core-android feature/bear-languages-2026-10-16:
+scripts/adapt-pandamonium-entropy-languages.py, activity_main XML display block. English labels retained.
+
+Review: inspected changed code/resources, existing themes and callers. No new
+blocking findings in this display change. Node operations and stored data unchanged.
+Validation: testDebugUnitTest, assembleRelease, lintRelease succeeded offline.
+5 existing BIP39 tests passed.
+Lint: 0 errors, 34 warnings. No physical device check; Fold disconnected.
+Actual APK package/version and Minima family signing certificate verified.
+Signed local candidate: dist/entropy-0.1.10-candidate.apk
+SHA256: 549538e4dfe69eab598ec9c3441044f1033f84b400235d6dca17654824a5759d
+No installation or publication. Full app parity/review remains in progress.
