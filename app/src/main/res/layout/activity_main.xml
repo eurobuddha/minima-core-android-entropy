@@ -26,7 +26,6 @@
                 android:textStyle="bold" />
             <TextView
                 android:id="@+id/btnSound"
-                android:contentDescription="Sound"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:layout_gravity="end|center_vertical"
@@ -35,7 +34,6 @@
                 android:textSize="20sp" />
             <TextView
                 android:id="@+id/btnDemo"
-                android:contentDescription="Demo mode"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:layout_gravity="start|center_vertical"
@@ -83,6 +81,7 @@
         android:layout_height="wrap_content"
         android:background="@color/bg"
         app:tabMode="scrollable"
+        app:tabGravity="center"
         app:tabIndicatorColor="@color/gold"
         app:tabSelectedTextColor="@color/gold"
         app:tabTextColor="#8A93AD"

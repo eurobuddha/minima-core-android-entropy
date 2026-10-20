@@ -12,7 +12,7 @@
   "app/build.gradle": {
     "mtime": 1786963761.3915756,
     "ast_hash": "2b0ccb1bdd4ae33cc4796fde0d99eccc",
-    "semantic_hash": ""
+    "semantic_hash": "2b0ccb1bdd4ae33cc4796fde0d99eccc"
   },
   "app/src/main/java/com/eurobuddha/entropy/BaseView.java": {
     "mtime": 1785876839.0701625,
@@ -32,7 +32,7 @@
   "app/src/main/java/com/eurobuddha/entropy/DiceView.java": {
     "mtime": 1786963441.7601125,
     "ast_hash": "5189936f0d363e2405fa949868e339fe",
-    "semantic_hash": ""
+    "semantic_hash": "5189936f0d363e2405fa949868e339fe"
   },
   "app/src/main/java/com/eurobuddha/entropy/LastWordView.java": {
     "mtime": 1785879803.4621387,
@@ -42,7 +42,7 @@
   "app/src/main/java/com/eurobuddha/entropy/MainActivity.java": {
     "mtime": 1786963417.590271,
     "ast_hash": "16444d13e18a9b0ca241299320ab6846",
-    "semantic_hash": ""
+    "semantic_hash": "16444d13e18a9b0ca241299320ab6846"
   },
   "app/src/main/java/com/eurobuddha/entropy/MainPager.java": {
     "mtime": 1785876843.023926,
@@ -97,21 +97,26 @@
   "CLAUDE.md": {
     "mtime": 1786883555.0609858,
     "ast_hash": "c97fee5c67e94bbf29f9f174882a9100",
-    "semantic_hash": ""
+    "semantic_hash": "c97fee5c67e94bbf29f9f174882a9100"
   },
   "README.md": {
     "mtime": 1786964894.3097768,
     "ast_hash": "dba37bc6c74348939c131c6ed4389482",
-    "semantic_hash": ""
+    "semantic_hash": "dba37bc6c74348939c131c6ed4389482"
   },
   "app/src/main/res/raw/bip39_english.txt": {
     "mtime": 1785876603.287616,
     "ast_hash": "f23506956964fa69c98fa3fb5c8823b5",
-    "semantic_hash": ""
+    "semantic_hash": "f23506956964fa69c98fa3fb5c8823b5"
   },
   "SECURITY-REVIEW.md": {
     "mtime": 1786964884.8884532,
     "ast_hash": "e27fc7f2cf2e0d5c38c7604209714bdb",
-    "semantic_hash": ""
+    "semantic_hash": "e27fc7f2cf2e0d5c38c7604209714bdb"
+  },
+  "docs/index.html": {
+    "mtime": 1786977057.9804795,
+    "ast_hash": "07e80c2e20715e824956958a2f1a6ce4",
+    "semantic_hash": "07e80c2e20715e824956958a2f1a6ce4"
   }
 }

@@ -50,9 +50,11 @@ public class MainActivity extends AppCompatActivity {
         Sfx.init(this);
         TextView btnSound = findViewById(R.id.btnSound);
         btnSound.setText(Theme.sound() ? "🔊" : "🔇");
+        btnSound.setContentDescription(Theme.sound() ? "Sound on" : "Sound off");
         btnSound.setOnClickListener(v -> {
             Theme.setSound(this, !Theme.sound());
             btnSound.setText(Theme.sound() ? "🔊" : "🔇");
+            btnSound.setContentDescription(Theme.sound() ? "Sound on" : "Sound off");
             if (Theme.sound()) Sfx.click();
         });
 
@@ -61,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
         // and a loud banner stays up the whole time it is on.
         TextView btnDemo = findViewById(R.id.btnDemo);
         TextView demoBanner = findViewById(R.id.demoBanner);
+        btnDemo.setContentDescription("Demo mode off");
         btnDemo.setOnClickListener(v -> {
             demoMode = !demoMode;
             if (demoMode) {
@@ -74,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
             demoBanner.setVisibility(demoMode ? android.view.View.VISIBLE : android.view.View.GONE);
             btnDemo.setAlpha(demoMode ? 1f : 0.55f);
             btnDemo.setText(demoMode ? "🔓" : "🎥");
+            btnDemo.setContentDescription(demoMode ? "Demo mode on — screen capture allowed" : "Demo mode off");
         });
         try {
             Bip39.init(this);
