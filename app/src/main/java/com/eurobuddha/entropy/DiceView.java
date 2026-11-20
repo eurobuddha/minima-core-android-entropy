@@ -233,8 +233,9 @@ public class DiceView extends BaseView {
                 Theme.gold(), 10, false);
         auditWrap.addView(auditWarn);
         TextView auditHint = Ui.text(c,
-                "Each digital face = SHA3(node_secret ++ device_secret) → first 4 bytes mod 6 " +
-                "(values ≥ 4294967292 rerolled — zero modulo bias). Verify any roll in a Minima " +
+                "Each digital face = SHA3(node_random A ++ device_secret B), worked out on this phone (B never " +
+                "leaves it) → first 4 bytes mod 6 (values ≥ 4294967292 rerolled — zero modulo bias). H is that " +
+                "hash. Verify any roll in a Minima " +
                 "terminal: runscript script:\"LET h=SHA3(CONCAT(<A> <B>)) LET n=NUMBER(SUBSET(0 4 h)) " +
                 "LET r=n%6 RETURN TRUE\"", Theme.dim(), 10, false);
         auditWrap.addView(auditHint);
@@ -342,14 +343,14 @@ public class DiceView extends BaseView {
         }
     }
 
-    /** A failed throw records nothing: one refused node answer discards all five dice and stops auto-roll. */
+    /** A failed throw records nothing: one refused or missing node answer discards all five dice, stops
+     *  auto-roll, is said on screen and has the node checked again (it is not trusted until it passes). */
     private void finishThrow(int[] results, RollEngine.Audit[] auds, boolean failed, boolean nodeBad) {
         if (failed) {
             for (DiceRollView d : dice) { d.cancel(); d.setIdleFace(0); }
             busy = false; auto = false;
             btnAuto.setText("Auto-roll: off"); btnAuto.setTextColor(Theme.dim());
-            if (!nodeBad) { setStatus("Entropy source error — nothing recorded. Try again.", true); return; }
-            setStatus(RollEngine.NODE_BAD + " Nothing was recorded.", true);
+            setStatus((nodeBad ? RollEngine.NODE_BAD : RollEngine.NODE_DOWN) + " Nothing was recorded. Checking the node again.", true);
             act.reverifyNode();   // the node is proved again before another roll may use it
             return;
         }
@@ -436,7 +437,7 @@ public class DiceView extends BaseView {
             RollEngine.Audit a = audits.get(i);
             if (RollEngine.SRC_PHYSICAL.equals(a.src)) log.append("#").append(i + 1).append(" face:").append(a.face).append(" (physical)\n");
             else if (RollEngine.SRC_DEVICE_ONLY.equals(a.src)) log.append("#").append(i + 1).append(" face:").append(a.face).append(" (device CSPRNG only)\n");
-            else log.append("#").append(i + 1).append(" A:").append(a.a).append(" B:").append(a.b).append(" n:").append(a.n).append(" face:").append(a.face).append("\n");
+            else log.append("#").append(i + 1).append(" A:").append(a.a).append(" B:").append(a.b).append(" H:").append(a.h).append(" n:").append(a.n).append(" face:").append(a.face).append("\n");
         }
         auditLog.setText(log.toString());
 

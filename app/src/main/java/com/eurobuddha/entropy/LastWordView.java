@@ -363,11 +363,11 @@ public class LastWordView extends BaseView {
             @Override public void onN(long n, String src) {
                 if (from != candidates) return;   // the phrase changed while the node answered
                 pick(from.get((int) (n % from.size())),
-                        RollEngine.SRC_NODE_DEVICE.equals(src) ? "picked by SHA3(node ++ device) entropy" : "picked by device entropy");
+                        RollEngine.SRC_NODE_DEVICE.equals(src) ? "picked by SHA3(node random ++ device), worked out on this phone" : "picked by device entropy");
             }
             @Override public void onError(String m) {
-                if (!RollEngine.NODE_BAD.equals(m)) { setStatus("Entropy source error — no word was picked. Try again.", true); return; }
-                setStatus("The node's answer did not match; no word was picked. Try again.", true);
+                setStatus((RollEngine.NODE_BAD.equals(m) ? "The node's random value was malformed or repeated" : "The node did not answer")
+                        + "; no word was picked. Checking the node again.", true);
                 act.reverifyNode();
             }
         });
