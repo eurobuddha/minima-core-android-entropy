@@ -358,8 +358,19 @@ public class LastWordView extends BaseView {
     private void pickRandom() {
         if (candidates == null || candidates.isEmpty()) return;
         // candidate count is a power of two, so mod of a uniform value is exactly uniform
-        act.engine().randomN((n, src) -> pick(candidates.get((int) (n % candidates.size())),
-                RollEngine.SRC_NODE_DEVICE.equals(src) ? "picked by SHA3(node ++ device) entropy" : "picked by device entropy"));
+        final List<String> from = candidates;
+        act.engine().randomN(new RollEngine.NCb() {
+            @Override public void onN(long n, String src) {
+                if (from != candidates) return;   // the phrase changed while the node answered
+                pick(from.get((int) (n % from.size())),
+                        RollEngine.SRC_NODE_DEVICE.equals(src) ? "picked by SHA3(node ++ device) entropy" : "picked by device entropy");
+            }
+            @Override public void onError(String m) {
+                if (!RollEngine.NODE_BAD.equals(m)) { setStatus("Entropy source error — no word was picked. Try again.", true); return; }
+                setStatus("The node's answer did not match; no word was picked. Try again.", true);
+                act.reverifyNode();
+            }
+        });
     }
 
     private void setHidden(boolean on) {

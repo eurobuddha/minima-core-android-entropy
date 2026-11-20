@@ -10,8 +10,8 @@ android {
         applicationId "com.eurobuddha.entropy"
         minSdk 28
         targetSdk 35
-        versionCode 114
-        versionName "0.1.14"
+        versionCode 115
+        versionName "0.1.15"
     }
     signingConfigs {
         // Minima family release key. Credentials come from ~/.gradle/gradle.properties
@@ -52,4 +52,5 @@ dependencies {
     implementation 'androidx.viewpager:viewpager:1.0.0'
     implementation files('libs/minimaapi.aar')
     testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.json:json:20231013'   // RollEngineTest: real JSONObject replies (android.jar's are stubs)
 }
